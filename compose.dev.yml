@@ -1,0 +1,47 @@
+x-common_config: &common_config
+  image: golang:1.23.1
+  working_dir: /app
+  networks:
+    - app
+  volumes:
+    - .:/app
+
+services:
+  web:
+    <<: *common_config
+    ports:
+      - "3000:3000"
+    command: go run ./cmd/web
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./cmd/web
+          target: /app
+        - action: sync+restart
+          path: ./internal
+          target: /app
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+  
+  cli:
+    <<: *common_config
+    depends_on:
+      - web
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./cmd/cli
+          target: /app
+    command: go run ./cmd/cli/main.go --source="${DEV_CLI_SOURCE_URL}" --target="${DEV_CLI_TARGET_URL}"
+    restart: on-failure:3
+
+networks:
+  app:
+
+volumes:
+  app:

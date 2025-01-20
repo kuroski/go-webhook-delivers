@@ -1,0 +1,36 @@
+---
+- name: Upgrade packages
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: true
+
+- name: Install packages
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - build-essential
+      - ca-certificates
+      - curl
+      - fail2ban
+      - git
+      - gnupg
+      - htop
+      - ntp
+      - ufw
+      - unattended-upgrades
+      - vim
+    state: latest
+    update_cache: true
+    autoremove: true
+    autoclean: true
+  notify:
+    - Start ntp
+    - Start fail2ban
+
+- name: Remove snap
+  ansible.builtin.apt:
+    name:
+      - snapd
+      - snap
+    state: absent
+    purge: true

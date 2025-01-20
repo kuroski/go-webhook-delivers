@@ -1,10 +1,51 @@
-- Add a `.env` with
+> This repository is part of an [article series](https://dev.to/kuroski/building-a-webhook-payload-delivery-service-in-go-31bg)
+
+## Introduction
+
+This repository contains two applications:
+
+- A [Webhook payload delivery service](https://dev.to/kuroski/building-a-webhook-payload-delivery-service-in-go-31bg) for local development
+- A Telegram bot that logs GitHub Actions workflows
+
+I will write the second part of the article once I have more time, but feel free to read the [first one](https://dev.to/kuroski/building-a-webhook-payload-delivery-service-in-go-31bg).
+
+https://github.com/user-attachments/assets/ca3580e0-61ba-4b11-bd61-f5f7e8e07204
+
+## Setup
+
+- Add a `.env` by `cp .env.sample .env`
+
 ``` dotenv 
-TELEGRAM_BOT_TOKEN=<YOUR_BOT_TOKEN>
-TELEGRAM_CHAT_ID=<DESIRED_CHAT_ID> # don't forget the `-` in front of the ID
-DEV_CLI_SOURCE_URL=<YOUR_SOURCE_ID>
-DEV_CLI_TARGET_URL=http://web:3000/webhook # if using docker, use `web` instead of `localhost`
+# this can be found when creating your bot through BotFather
+# https://core.telegram.org/bots/tutorial#obtain-your-bot-token
+TELEGRAM_BOT_TOKEN=
+# this can either be found through the browser URL, it should have a format liks "-1234567890"
+# or you can use https://telegram.me/rawdatabot
+TELEGRAM_CHAT_ID=
+
+# this is for dev environment + it is explained on the article how it works
+DEV_CLI_SOURCE_URL=https://your-service.com # e.g. https://smee.io/
+DEV_CLI_TARGET_URL=http://web:3000/webhook
+
+# you must have a github app created with the Webhook URL pointing to your server
+# this will be the URL of the deployed webserver
+# https://your-server.com/webhooks - for prod
+# https://your-server.com/channel/<any-wildcard> - for dev
+# more info on how to generate the key below
+GITHUB_APP_PRIVATE_KEY=
+
+# the APP_ID and APP_INSTALLATION_ID can be found directly in the Github App page
+GITHUB_APP_ID=
+GITHUB_APP_INSTALLATION_ID=
 ```
+
+#### Generating github app private key
+
+- Go to github app page
+- Click on "generate a private key" in the **Private keys** section
+- Save the `.pem` file appropriately
+- Generate a base64 representation of the item using `base64 -w 0 -i my.pem > encoded-private-key.txt` or `pbcopy < base64 -w 0 -i my.pem`
+- Copy the content into the `GITHUB_APP_PRIVATE_KEY` env variable
 
 ## Commands
 - `make dev` - runs docker environment with CLI and Web
@@ -28,7 +69,14 @@ If you want to debug server, just run cli separately
 make cli-run source=http://my-source target=http://localhost:3000/webhook
 ```
 
+## Deploying the server
+
+You can find a guide on the [first article](https://dev.to/kuroski/building-a-webhook-payload-delivery-service-in-go-31bg)
+
 ## Ansible
+
+> All credits for the playbooks are from
+> https://github.com/guillaumebriday/kamal-ansible-manager
 
 When provisioning a new droplet, just configure ansible inside infra folder and run it
 
@@ -67,11 +115,3 @@ Run the playbook:
 ```bash
 $ ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i infra/hosts.ini infra/playbook.yml
 ```
-
-## Generating github app private key
-
-- Go to github app page
-- Click on "generate a private key" in the **Private keys** section
-- Save the `.pem` file appropriately
-- Generate a base64 representation of the item using `base64 -w 0 -i my.pem > encoded-private-key.txt` or `pbcopy < base64 -w 0 -i my.pem`
-- Copy the content into the `GITHUB_APP_PRIVATE_KEY` env variable

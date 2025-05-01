@@ -3,13 +3,14 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/go-github/v67/github"
-	"github.com/kuroski/go-webhook-deliveries/internal/model"
-	"github.com/tmaxmax/go-sse"
 	"io"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/google/go-github/v67/github"
+	"github.com/kuroski/go-webhook-deliveries/internal/model"
+	"github.com/tmaxmax/go-sse"
 )
 
 func (srv *Server) upHandler(w http.ResponseWriter, r *http.Request) {
